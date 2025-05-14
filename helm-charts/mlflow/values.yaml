@@ -1,0 +1,104 @@
+replicaCount: 1
+
+image:
+  repository: custom-mlflow
+  pullPolicy: Never
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 5000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: mlflow.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+postgresql:
+  enabled: true
+  auth:
+    username: "mlflow_user"
+    password: "supersecretpassword"
+    database: "mlflow_db"
+  primary:
+    persistence:
+      size: 1Gi
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "250m"
+
+minio:
+  enabled: true
+  mode: standalone
+  accessKey: "MINIO_ACCESS_KEY_LOCAL"
+  secretKey: "MINIO_SECRET_KEY_LOCAL"
+  defaultBuckets: "mlflow-artifacts"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "250m"
+  persistence:
+    size: 5Gi
+
+server:
+  args:
+    host: "0.0.0.0"
+    port: "5000"
+    backendStore:
+      type: "postgresql"
+    artifactStore:
+      type: "s3"
+
+persistence:
+  backend:
+    enabled: false
+
+  artifacts:
+    enabled: false
+
+extraSecrets: {}
+
+resources:
+  limits:
+    cpu: "1"
+    memory: "1Gi"
+  requests:
+    cpu: "200m"
+    memory: "512Mi"
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
