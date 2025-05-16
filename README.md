@@ -2,6 +2,11 @@
 
 This project is a Proof of Concept (POC) for an MLOps platform utilizing MLFlow for tracking and deployment, and MLServer on Seldon-Core for inference serving.
 
+## Hands on serving ML models
+
+Want to get your hands dirty? Follow our step-by-step guide to serve your first ML model using this platform:
+[➡️ Hands-On: Serving ML Models](./docs/basic-hands-on/README.md)
+
 ## Overview
 
 The platform is designed to streamline the machine learning lifecycle, from experimentation and model training to deployment and serving in a Kubernetes environment.
