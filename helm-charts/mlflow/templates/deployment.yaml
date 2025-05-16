@@ -43,7 +43,7 @@ spec:
             - "--backend-store-uri"
             - "postgresql://{{ .Values.postgresql.auth.username }}:{{ .Values.postgresql.auth.password }}@{{ .Release.Name }}-postgresql:5432/{{ .Values.postgresql.auth.database }}"
             - "--default-artifact-root"
-            - "s3://{{ .Values.minio.defaultBuckets }}"
+            - "s3://{{ (index .Values.minio.buckets 0).name }}"
             {{- with .Values.server.args.workers }}
             - "--workers"
             - "{{ . }}"
@@ -52,9 +52,9 @@ spec:
             - name: MLFLOW_S3_ENDPOINT_URL
               value: "http://{{ .Release.Name }}-minio:{{ .Values.minio.service.port | default 9000 }}"
             - name: AWS_ACCESS_KEY_ID
-              value: {{ .Values.minio.accessKey | quote }}
+              value: {{ index .Values.minio.users 0 "accessKey" | quote }}
             - name: AWS_SECRET_ACCESS_KEY
-              value: {{ .Values.minio.secretKey | quote }}
+              value: {{ index .Values.minio.users 0 "secretKey" | quote }}
           ports:
             - name: http
               containerPort: 5000
