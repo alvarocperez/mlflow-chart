@@ -1,0 +1,58 @@
+deploymentName: "my-seldon-deployment"
+namespace: "seldon-models"
+labels: {}
+s3ClientConfig:
+  endpointUrl: "http://mlflow-release-minio.mlflow.svc.cluster.local:9000"
+  accessKey: "mlflow_minio_user"
+  secretKey: "mlflow_minio_password"
+  useHttps: "0"
+  verifySsl: "0"
+
+predictor:
+  name: "default-predictor"
+  replicas: 1
+  image:
+    repository: "ml-server"
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  graph:
+    name: "model-server"
+    type: "MODEL"
+    implementation: "XGBOOST_SERVER"
+    modelUri: "s3://seldon-default-bucket/path/to/default/model"
+    modelName: ""
+    envVars: {}
+
+  containerResources:
+    requests:
+      memory: "1.5Gi"
+      cpu: "750m"
+    limits:
+      memory: "3Gi"
+      cpu: "1.5"
+
+  annotations: {}
+  serviceAccountName: ""
+
+  rcloneConfigSecretName: "seldon-rclone-secret"
+
+engineResources:
+    requests:
+      memory: "1.5Gi"
+      cpu: "750m"
+    limits:
+      memory: "3Gi"
+      cpu: "1.5"
+
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 1
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+nameOverride: ""
+fullnameOverride: ""

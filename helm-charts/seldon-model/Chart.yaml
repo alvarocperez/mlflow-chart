@@ -1,0 +1,17 @@
+apiVersion: v2
+name: seldon-model
+description: A Helm chart for deploying a machine learning model using a SeldonDeployment CRD. Assumes Seldon Core Operator is already installed.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - seldon
+  - mlops
+  - machine-learning
+  - model deployment
+home: https://www.seldon.io/
+sources:
+  - https://github.com/SeldonIO/seldon-core
+maintainers:
+  - name: alvarocperez
+    email: 12540964+alvarocperez@users.noreply.github.com

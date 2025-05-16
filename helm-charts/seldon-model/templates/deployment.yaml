@@ -1,0 +1,114 @@
+apiVersion: machinelearning.seldon.io/v1
+kind: SeldonDeployment
+metadata:
+  name: {{ .Values.deploymentName | default (include "seldon-model.fullname" .) }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.deploymentName | default (include "seldon-model.name" .) }}
+    {{- with .Values.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- include "seldon-model.labels" . | nindent 4 }}
+spec:
+  name: {{ .Values.predictor.name }}
+  {{- with .Values.engineResources }}
+  engineResources: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  protocol: v2
+  predictors:
+  - name: {{ .Values.predictor.name }}
+    replicas: {{ .Values.predictor.replicas }}
+    {{- with .Values.predictor.annotations }}
+    annotations: {{- toYaml . | nindent 6 }}
+    {{- end }}
+    componentSpecs:
+    - spec:
+        containers:
+        - name: {{ .Values.predictor.graph.name }}
+          image: "{{ .Values.predictor.image.repository }}:{{ .Values.predictor.image.tag | default "latest" }}"
+          imagePullPolicy: {{ .Values.predictor.image.pullPolicy }}
+          protocol: v2
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: grpc
+              containerPort: 8081
+            - name: metrics
+              containerPort: 8082
+          livenessProbe:
+              httpGet:
+                path: /v2/health/live
+                port: http
+              initialDelaySeconds: 60
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 6
+          readinessProbe:
+              httpGet:
+                path: /v2/health/ready
+                port: http
+              initialDelaySeconds: 90
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 3
+
+          {{- with .Values.predictor.containerResources }}
+          resources: {{- toYaml . | nindent 12 }}
+          {{- end }}
+          env:
+            - name: MLSERVER_METRICS_DIR
+              value: "/tmp/metrics"
+            - name: MLFLOW_CONDA_HOME
+              value: "/tmp/conda"
+            - name: MLSERVER_CACHE_DIR
+              value: "/tmp/cache"
+            - name: GRPC_VERBOSITY
+              value: "debug"
+            - name: MLSERVER_HOST
+              value: "127.0.0.1"
+            - name: MLSERVER_GRPC_PORT
+              value: "8081"
+            - name: MLSERVER_HTTP_PORT
+              value: "8080"
+            - name: MLSERVER_METRICS_PORT
+              value: "8082"
+
+            {{- with .Values.predictor.graph.envVars }}
+            {{- range $key, $value := . }}
+            - name: {{ $key | quote }}
+              value: {{ $value | quote }}
+            {{- end }}
+            {{- end }}
+        {{- if .Values.predictor.serviceAccountName }}
+        serviceAccountName: {{ .Values.predictor.serviceAccountName }}
+        {{- end }}
+        {{- with .Values.nodeSelector }}
+        nodeSelector: {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.affinity }}
+        affinity: {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.tolerations }}
+        tolerations: {{- toYaml . | nindent 10 }}
+        {{- end }}
+    graph:
+      name: {{ .Values.predictor.graph.name }}
+      type: {{ .Values.predictor.graph.type }}
+      implementation: {{ .Values.predictor.graph.implementation }}
+      modelUri: {{ .Values.predictor.graph.modelUri }}
+      {{- if .Values.predictor.rcloneConfigSecretName }}
+      envSecretRefName: {{ .Values.predictor.rcloneConfigSecretName }}
+      {{- end }}
+      parameters:
+        - name: no_conda
+          type: BOOL
+          value: "true"
+      {{- if .Values.predictor.graph.modelName }}
+      endpoint:
+        type: REST
+        name: {{ .Values.predictor.graph.modelName }}
+      {{- else }}
+      endpoint:
+        type: REST
+        name: {{ .Values.predictor.graph.name }}
+      {{- end }}

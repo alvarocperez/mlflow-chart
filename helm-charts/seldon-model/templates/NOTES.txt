@@ -1,0 +1,31 @@
+Your Seldon Model "{{ .Values.deploymentName | default (include "seldon-model.fullname" .) }}" has been deployed to namespace "{{ .Values.namespace }}".
+
+An HorizontalPodAutoscaler (HPA) has also been configured for this model:
+  Name: {{ .Values.deploymentName | default (include "seldon-model.fullname" .) }}
+  Min Replicas: {{ .Values.autoscaling.minReplicas }}
+  Max Replicas: {{ .Values.autoscaling.maxReplicas }}
+  Target CPU Utilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}%
+
+To check the status of your SeldonDeployment:
+  kubectl get sdep {{ .Values.deploymentName | default (include "seldon-model.fullname" .) }} -n {{ .Values.namespace }} -w
+
+To check the model server pods:
+  kubectl get pods -n {{ .Values.namespace }} -l seldon-deployment-id={{ .Values.deploymentName | default (include "seldon-model.fullname" .) }}
+
+To check the HPA status:
+  kubectl get hpa {{ .Values.deploymentName | default (include "seldon-model.fullname" .) }} -n {{ .Values.namespace }} -w
+
+Once the pods are Running and Ready, Seldon Core will create a Kubernetes Service for your model.
+The service name will typically be "{{ .Values.predictor.name }}".
+  kubectl get svc {{ .Values.predictor.name }} -n {{ .Values.namespace }}
+
+You might need to port-forward to the service to test, e.g.:
+  kubectl port-forward svc/{{ .Values.predictor.name }} -n {{ .Values.namespace }} 9000:<targetPort_from_service>
+  (The targetPort for Seldon's HTTP protocol is often 9000 for the model itself)
+
+Then you can send inference requests. For example, for the v2 protocol, to the model's endpoint:
+  curl -X POST -H "Content-Type: application/json" \
+       -d '{"inputs": [{"name": "input-0", "shape": [1, YOUR_NUM_FEATURES], "datatype": "FP32", "data": [[YOUR_INPUT_DATA_ARRAY]]}]}' \
+       http://localhost:9000/v2/models/{{ .Values.predictor.graph.modelName | default .Values.predictor.graph.name }}/infer
+
+For more details on Seldon Core, visit: https://www.seldon.io/
