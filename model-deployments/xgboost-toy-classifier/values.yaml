@@ -1,0 +1,31 @@
+deploymentName: "xgboost-toy-direct"
+namespace: "mlflow"
+predictor:
+  name: "toy-direct-predictor"
+  rcloneConfigSecretName: "seldon-rclone-env-secret"
+  replicas: 1
+  image:
+    repository: "seldonio/mlflowserver"
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  graph:
+    name: "xgboost-toy-server"
+    implementation: "MLFLOW_SERVER"
+    modelUri: "s3://mlflow-artifacts/1/76c20b9893544b7bb2a38e26cf3e20f7/artifacts/toy_xgboost_model"
+    envVars:
+
+  containerResources:
+      requests:
+        memory: "6Gi"
+        cpu: "1"
+      limits:
+        memory: "9Gi"
+        cpu: "2"
+
+engineResources:
+    requests:
+      memory: "1.5Gi"
+      cpu: "750m"
+    limits:
+      memory: "3Gi"
+      cpu: "1.5"
