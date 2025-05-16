@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-served-models-to-minio
+  namespace: mlflow
+spec:
+  podSelector:
+    matchLabels:
+      app: minio
+      release: mlflow-release
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: served-models
+    ports:
+    - protocol: TCP
+      port: 9000
