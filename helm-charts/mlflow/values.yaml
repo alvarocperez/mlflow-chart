@@ -53,9 +53,17 @@ postgresql:
 minio:
   enabled: true
   mode: standalone
-  accessKey: "MINIO_ACCESS_KEY_LOCAL"
-  secretKey: "MINIO_SECRET_KEY_LOCAL"
-  defaultBuckets: "mlflow-artifacts"
+  rootUser: "console"
+  rootPassword: "console123"
+  users:
+    - accessKey: "mlflow_minio_user"
+      secretKey: "mlflow_minio_password"
+      policy: "readwrite"
+  buckets:
+    - name: "mlflow-artifacts"
+      policy: "upload"
+      purge: false
+      versioning: false
   resources:
     requests:
       memory: "128Mi"
