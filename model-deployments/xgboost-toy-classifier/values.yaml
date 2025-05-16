@@ -5,7 +5,7 @@ predictor:
   rcloneConfigSecretName: "seldon-rclone-env-secret"
   replicas: 1
   image:
-    repository: "seldonio/mlflowserver"
+    repository: "ml-server"
     tag: "latest"
     pullPolicy: IfNotPresent
   graph:
