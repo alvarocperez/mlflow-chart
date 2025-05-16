@@ -1,4 +1,4 @@
-# MLFlow-Chart: MLOps Platform POC
+# MLOps Platform POC
 
 This project is a Proof of Concept (POC) for an MLOps platform utilizing MLFlow for tracking and deployment, and MLServer on Seldon-Core for inference serving.
 
